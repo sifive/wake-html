@@ -35,6 +35,7 @@ const program = node => {
   // node.range = [0, node.source.length+1];
   const span = spanner(utf8.encode(node.source));
   return ['div',
+    ['hr'],
     ['h2', (node.filename || '---')],
     ['pre', span(node)]
   ];
