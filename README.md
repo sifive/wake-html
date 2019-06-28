@@ -27,4 +27,4 @@ It should generate file like:
 </script>
 ```
 
-You oupe it in the browser.
+You open it in the browser.
