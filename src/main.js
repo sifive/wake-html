@@ -4,8 +4,10 @@ const JSON5 = require('json5');
 const stringify = require('onml/lib/stringify.js');
 const style = require('../lib/style.js');
 const utf8 = require('utf8');
+// const tooltip = require('tooltip.js');
 
-const spanner = str => {
+const spanner = root => {
+  const str = utf8.encode(root.source);
   return function rec (node) {
     const pRange = node.range;
     const body = node.body;
@@ -27,13 +29,25 @@ const spanner = str => {
     if (pointer < pRange[1]) {
       res.push(utf8.decode(str.slice(pointer, pRange[1])));
     }
-    return ['span', {class: node.type, 'title': node.sourceType}].concat(res);
+    const head = ['span', {
+      id: root.filename + ':' + node.range.join(':'),
+      class: node.type,
+      title: node.sourceType
+    }];
+
+    if (node.target) {
+      head[0] = 'a';
+      head[1].href = '#' + node.target.filename + ':' + node.target.range.join(':');
+    }
+
+    return head.concat(res);
   };
 };
 
 const program = node => {
   // node.range = [0, node.source.length+1];
-  const span = spanner(utf8.encode(node.source));
+  // console.log(node.filename);
+  const span = spanner(node);
   return ['div',
     ['hr'],
     ['h2', (node.filename || '---')],
@@ -61,5 +75,7 @@ function main () {
 }
 
 document.addEventListener('DOMContentLoaded', main);
+
+// console.log(tooltip);
 
 /* eslint-env browser */
