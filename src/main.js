@@ -4,7 +4,6 @@ const JSON5 = require('json5');
 const stringify = require('onml/lib/stringify.js');
 const style = require('../lib/style.js');
 const utf8 = require('utf8');
-// const tooltip = require('tooltip.js');
 
 const spanner = root => {
   const str = utf8.encode(root.source);
@@ -31,9 +30,16 @@ const spanner = root => {
     }
     const head = ['span', {
       id: root.filename + ':' + node.range.join(':'),
-      class: node.type,
-      title: node.sourceType
+      class: node.type
     }];
+
+    if (node.sourceType) {
+      head[1].sourceType = node.sourceType;
+      // head[1].onmouseover = 'onMouseOver(this, event)';
+      // head[1].onmousemove = 'onMouseMove(this, event)';
+      head[1].onmouseenter = 'onMouseEnter(this, event)';
+      head[1].onmouseleave = 'onMouseLeave(this, event)';
+    }
 
     if (node.target) {
       head[0] = 'a';
@@ -57,11 +63,16 @@ const program = node => {
 
 const workspace = node => ['div'].concat((node.body || []).map(program));
 
+// tooltip
+const tooltip = document.createElement('div');
+tooltip.classList.add('tooltip');
+
 function body (node) {
   document.body.innerHTML = stringify(['div', {class: 'content'},
     style(),
     workspace(node)
   ]);
+  document.body.appendChild(tooltip);
 }
 
 function main () {
@@ -74,7 +85,29 @@ function main () {
   }
 }
 
+
 document.addEventListener('DOMContentLoaded', main);
+// document.onMouseOver  = function (that, event) { event.stopPropagation(); console.log('onMouseOver',  this, that, event); };
+// document.onMouseMove  = function (that, event) { event.stopPropagation(); console.log('onMouseMove',  this, that, event); };
+
+
+document.onMouseEnter = function (that, event) {
+  // event.stopPropagation();
+  tooltip.style.visibility = 'visible';
+  tooltip.style.cssText = `position: absolute; top: ${event.pageY + 10}px; left: ${event.pageX}px;`;
+  const line = document.createElement('div');
+  line.innerHTML = that.getAttribute('sourceType');
+  tooltip.insertBefore(line, tooltip.firstChild);
+  // console.log('onMouseEnter', this, that, event);
+};
+
+document.onMouseLeave = function (that, event) {
+  tooltip.removeChild(tooltip.firstChild);
+  if (tooltip.childNodes.length === 0) {
+    tooltip.style.visibility = 'hidden';
+  }
+  // console.log('onMouseLeave', this, that, event);
+};
 
 // console.log(tooltip);
 

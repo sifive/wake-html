@@ -31,6 +31,5 @@
   },
   "eslintConfig": {
     "extends": "@drom/eslint-config/eslint4/node8"
-  },
-  "dependencies": {}
+  }
 }
