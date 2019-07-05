@@ -28,3 +28,9 @@ It should generate file like:
 ```
 
 You open it in the browser.
+
+## Test
+
+```sh
+npm test
+```
