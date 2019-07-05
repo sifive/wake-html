@@ -18,7 +18,7 @@ const spanner = root => {
         res.push(utf8.decode(str.slice(pointer, cRange[0])));
       }
       if (cRange[1] > pRange[1]) {
-        console.error(cRange[1], pRange[1]);
+        // console.error(cRange[1], pRange[1]);
         res.push(['span', {class: 'error'}, rec(child)]);
       } else {
         res.push(rec(child));
@@ -37,7 +37,7 @@ const spanner = root => {
       head[1].onmouseout  = 'onMouseOut(this, event)';
     }
 
-    if (node.type == "VarDef" || node.type == "VarArg") {
+    if (node.type === 'VarDef' || node.type === 'VarArg') {
       head[1].id = root.filename + ':' + node.range.join(':');
       head[1].onclick = 'onMouseClick(this, event)';
     }
@@ -143,8 +143,8 @@ document.onMouseOut = function (that, event) {
 
 document.addEventListener('keypress', function(event) {
   let char = event.which || event.keyCode;
-  if (char == 43) { ++depth; update(); }
-  if (char == 45 && depth > 0) { --depth; update(); }
+  if (char === 43) { ++depth; update(); }
+  if (char === 45 && depth > 0) { --depth; update(); }
 }, true);
 
 /* eslint-env browser */

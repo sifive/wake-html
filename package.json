@@ -4,7 +4,7 @@
   "description": "HTML view of WAKE flow",
   "main": "index.js",
   "scripts": {
-    "test": "eslint lib && nyc -r=text -r=lcov mocha",
+    "test": "eslint lib src",
     "build": "browserify -p tinyify src/main.js > wake.js"
   },
   "repository": {
@@ -20,11 +20,8 @@
   "devDependencies": {
     "@drom/eslint-config": "^0.10.0",
     "browserify": "^16.2.3",
-    "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "json5": "^2.1.0",
-    "mocha": "^6.1.4",
-    "nyc": "^14.0.0",
     "onml": "^1.0.0",
     "tinyify": "^2.5.1",
     "utf8": "^3.0.0"
