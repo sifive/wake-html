@@ -28,17 +28,18 @@ const spanner = root => {
     if (pointer < pRange[1]) {
       res.push(utf8.decode(str.slice(pointer, pRange[1])));
     }
-    const head = ['span', {
-      id: root.filename + ':' + node.range.join(':'),
-      class: node.type
-    }];
+
+    const head = ['span', { class: node.type }];
 
     if (node.sourceType) {
       head[1].sourceType = node.sourceType;
-      // head[1].onmouseover = 'onMouseOver(this, event)';
-      // head[1].onmousemove = 'onMouseMove(this, event)';
-      head[1].onmouseenter = 'onMouseEnter(this, event)';
-      head[1].onmouseleave = 'onMouseLeave(this, event)';
+      head[1].onmouseover = 'onMouseOver(this, event)';
+      head[1].onmouseout  = 'onMouseOut(this, event)';
+    }
+
+    if (node.type == "VarDef" || node.type == "VarArg") {
+      head[1].id = root.filename + ':' + node.range.join(':');
+      head[1].onclick = 'onMouseClick(this, event)';
     }
 
     if (node.target) {
@@ -67,11 +68,16 @@ const workspace = node => ['div'].concat((node.body || []).map(program));
 const tooltip = document.createElement('div');
 tooltip.classList.add('tooltip');
 
+// css to select uses
+const usecss = document.createElement('div');
+usecss.appendChild(document.createElement('style'));
+
 function body (node) {
   document.body.innerHTML = stringify(['div', {class: 'content'},
     style(),
     workspace(node)
   ]);
+  document.body.appendChild(usecss);
   document.body.appendChild(tooltip);
 }
 
@@ -85,30 +91,60 @@ function main () {
   }
 }
 
-
 document.addEventListener('DOMContentLoaded', main);
-// document.onMouseOver  = function (that, event) { event.stopPropagation(); console.log('onMouseOver',  this, that, event); };
-// document.onMouseMove  = function (that, event) { event.stopPropagation(); console.log('onMouseMove',  this, that, event); };
 
+let depth = 0;
+let inner = null;
+let select = null;
 
-document.onMouseEnter = function (that, event) {
-  // event.stopPropagation();
-  tooltip.style.visibility = 'visible';
-  tooltip.style.cssText = `position: absolute; top: ${event.pageY + 10}px; left: ${event.pageX}px;`;
-  const line = document.createElement('div');
-  line.innerHTML = that.getAttribute('sourceType');
-  tooltip.insertBefore(line, tooltip.firstChild);
-  // console.log('onMouseEnter', this, that, event);
-};
-
-document.onMouseLeave = function (that, event) {
-  tooltip.removeChild(tooltip.firstChild);
-  if (tooltip.childNodes.length === 0) {
-    tooltip.style.visibility = 'hidden';
+function update () {
+  let next = inner;
+  for (let i = 0; i < depth; ++i) {
+    let parent = next.parentElement;
+    if (!parent.getAttribute('sourceType')) break;
+    next = parent;
   }
-  // console.log('onMouseLeave', this, that, event);
+  if (next != select) {
+    if (select) {
+      select.removeAttribute('focus');
+      tooltip.style.visibility = 'hidden';
+      tooltip.removeChild(tooltip.firstChild);
+    }
+    if (next) {
+      next.setAttribute('focus', 'true');
+      tooltip.style.visibility = 'visible';
+      const line = document.createElement('div');
+      line.innerHTML = next.getAttribute('sourceType');
+      tooltip.insertBefore(line, tooltip.firstChild);
+    }
+  }
+  select = next;
+}
+
+document.onMouseClick = function (that, event) {
+  usecss.firstChild.innerHTML = 'a[href=\'#' + that.id + '\'] { background-color: red; }';
+  event.stopPropagation();
 };
 
-// console.log(tooltip);
+document.onMouseOver = function (that, event) {
+  inner = that;
+  depth = 0;
+  update();
+  tooltip.style.cssText = `position: absolute; top: ${event.pageY + 10}px; left: ${event.pageX}px;`;
+  event.stopPropagation();
+};
+
+document.onMouseOut = function (that, event) {
+  inner = null;
+  depth = 0;
+  update();
+  event.stopPropagation();
+};
+
+document.addEventListener('keypress', function(event) {
+  let char = event.which || event.keyCode;
+  if (char == 43) { ++depth; update(); }
+  if (char == 45 && depth > 0) { --depth; update(); }
+}, true);
 
 /* eslint-env browser */
